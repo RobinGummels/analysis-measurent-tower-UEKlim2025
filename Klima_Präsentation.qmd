@@ -45,23 +45,61 @@ When you click the **Render** button a presentation will be generated that inclu
 #| echo: true 
 #| message: true
 
-steinfurter <- read.csv2(
+# Header aus erster Zeile auslesen
+csv_headers = read.csv2(file = "data/data-as-csv/metMastSteinfurterStr.csv", 
+                        header = FALSE, nrows = 1, as.is = TRUE)
+
+# Daten ab Zeile 6 einlesen mit den Header-Namen
+data <- read.csv2(
   "data/data-as-csv/metMastSteinfurterStr.csv",
   skip = 5,
   header = FALSE,
   dec = ","
 )
-
-# Spaltennamen setzen (aus der Originaldatei)
-colnames(steinfurter) <- c(
-  "Zeitstempel", "Record", "Niederschlag_mm", "Temp_Avg", "Temp_Max", "Temp_Min",
-  "RH_Avg", "RH_Max", "RH_Min", "Luftdruck_hPa", "SW_ein", "SW_refl",
-  "LW_ein", "LW_aus", "CNR4TC_Avg", "WS_USA", "WindDir_USA", "WindDir_SD_USA",
-  "WS_Prop", "WindDir_Prop", "WindDir_SD_Prop", "BattV_Min", "PTemp_Min", "PTemp_Max"
-)
+colnames(data) <- csv_headers
 ```
 </details>
 
+```{css, echo=FALSE}
+/* Schriftgröße VOR der DT-Berechnung setzen */
+.dataTables_wrapper {
+  font-size: 11px !important;
+}
+.dataTables_wrapper table thead th {
+  font-size: 10px !important;
+  padding: 3px 5px !important;
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.dataTables_wrapper table tbody td {
+  font-size: 11px !important;
+  padding: 2px 4px !important;
+}
+```
+
 ```{r}
-print(steinfurter)
+DT::datatable(
+  data,
+  options = list(
+    scrollY = "350px",
+    scrollX = TRUE,
+    pageLength = 50,
+    searching = FALSE,
+    paging = FALSE,
+    info = FALSE,
+    autoWidth = FALSE,
+    columnDefs = list(
+      list(width = "90px", targets = 0),  # Zeitstempel etwas breiter
+      list(width = "60px", targets = "_all")  # Alle anderen schmal
+    ),
+    initComplete = htmlwidgets::JS(
+      "function(settings, json) {",
+      "  this.api().columns.adjust();",
+      "}"
+    )
+  ),
+  class = "compact cell-border stripe",
+  style = "bootstrap"
+)
 ```
