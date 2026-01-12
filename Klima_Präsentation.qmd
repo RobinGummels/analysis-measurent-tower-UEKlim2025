@@ -105,3 +105,80 @@ DT::datatable(
   style = "bootstrap"
 )
 ```
+
+## Was ist Autokorrelation?
+
+**Autokorrelation** misst, wie stark ein Messwert mit früheren Messwerten zusammenhängt.
+
+- Wenn die Temperatur **jetzt** hoch ist, ist sie wahrscheinlich auch in 10 Minuten noch hoch
+- Je weiter wir in die Vergangenheit schauen, desto schwächer wird dieser Zusammenhang
+- **Hohe Autokorrelation** = starke Ähnlichkeit zwischen Werten mit bestimmtem Zeitabstand
+
+
+## Was ist Autokorrelation?
+**Mathematisch:**
+$$
+\text{ACF}(k) = \frac{\text{Kovarianz}(X_t, X_{t-k})}{\text{Varianz}(X_t)}
+$$
+
+wobei $k$ die Anzahl der Zeitschritte (Lag) zurück ist.
+
+## Autokorrelation berechnen in R
+
+```{r}
+#| echo: true
+#| eval: false
+# acf() berechnet die Autokorrelation für verschiedene Lags
+# lag.max = 432 entspricht 3 Tagen (432 × 10min = 4320min = 72h)
+acf(data$`Durschnittl. Lufttemperatur [°C]`, lag.max = 432)
+```
+
+- **Lag 0**: Korrelation mit sich selbst (immer 1.0)
+- **Lag 144**: Korrelation mit dem Wert von vor 24h (144 × 10min = 1440min = 24h)
+- **Lag 288**: Korrelation mit dem Wert von vor 48h
+
+Die blauen gestrichelten Linien zeigen die **Signifikanzgrenze** – Werte darüber sind statistisch bedeutsam.
+
+## Autokorrelation der Temperatur
+
+```{r}
+#| echo: false
+#| fig-width: 10
+#| fig-height: 6
+
+# ACF-Daten berechnen
+temp_acf <- acf(data$`Durschnittl. Lufttemperatur [°C]`, 
+                lag.max = 432, 
+                plot = FALSE)
+
+# Plot erstellen
+plot(temp_acf, 
+     main = "Autokorrelation der Lufttemperatur (10-Minuten-Daten)",
+     xlab = "Lag (10-Minuten-Schritte)",
+     ylab = "ACF",
+     ci.col = "blue")
+
+# 24h-Markierungen hinzufügen (alle 144 Lags = 24h)
+abline(v = c(144, 288, 432), col = "red", lty = 2, lwd = 2)
+
+# Beschriftung für die 24h-Marken
+text(x = 144, y = 0.9, labels = "24h", col = "red", pos = 3, cex = 1.2, font = 2)
+text(x = 288, y = 0.9, labels = "48h", col = "red", pos = 3, cex = 1.2, font = 2)
+text(x = 432, y = 0.9, labels = "72h", col = "red", pos = 3, cex = 1.2, font = 2)
+```
+
+**Beobachtung:** Deutliche Spitzen alle 24 Stunden → Täglicher Temperaturzyklus!
+
+## Interpretation: Tagesverlauf in den Daten
+
+- **Hohe Autokorrelation bei Lag 144 (24h):** Die Temperatur jetzt ist stark korreliert mit der Temperatur zur gleichen Uhrzeit gestern
+- **Wellenmuster:** Die Autokorrelation oszilliert mit einer Periode von ~144 Lags
+- **Ursache:** Der tägliche Sonnenzyklus (Tag/Nacht) erzeugt eine periodische Temperaturschwankung
+
+→ Um **langfristige Trends** zu erkennen, müssen wir diesen **Tagesverlauf herausrechnen**!
+
+## Saisonale Komponente (Tagesverlauf) rausrechnen
+Um die Temperaturänderung ohne des Tagesverlauf zu erkennen, können wir diese statisch "herausrechnen":
+```{r}
+
+```
