@@ -1,0 +1,5 @@
+# Alle files in dem Ordner Klima_Präsentation_files ignorieren
+Klima_Präsentation_files/
+
+# Und die HTML:
+Klima_Präsentation.html
