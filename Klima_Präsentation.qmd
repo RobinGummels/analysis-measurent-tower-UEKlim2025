@@ -1,6 +1,8 @@
 ---
 title: "Hier Titel einfügen"
-format: revealjs
+format: 
+  revealjs: 
+    theme: dark
 editor: visual
 ---
 
