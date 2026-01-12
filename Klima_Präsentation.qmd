@@ -11,16 +11,18 @@ editor: visual
 # Wir haben unsere Auswertung mit R gemacht
 
 ## Was ist R?
-- Open-Source Programmiersprache speziell für Statistik und Datenanalyse
-- Bringt tausende Pakete für Auswertung, Visualisierung und Reproduzierbarkeit mit
-- Funktioniert interaktiv (Konsole/RStudio) und in Skripten für reproduzierbare Workflows
-- Läuft auf allen gängigen Betriebssystemen und ist frei verfügbar
+
+-   Open-Source Programmiersprache speziell für Statistik und Datenanalyse
+-   Bringt tausende Pakete für Auswertung, Visualisierung und Reproduzierbarkeit mit
+-   Funktioniert interaktiv (Konsole/RStudio) und in Skripten für reproduzierbare Workflows
+-   Läuft auf allen gängigen Betriebssystemen und ist frei verfügbar
 
 ## Warum R?
-- Saubere Trennung von Code, Daten und Ergebnis: Analysen bleiben nachvollziehbar
-- Starke Visualisierung (z.B. `ggplot2`) für schnelle Diagramme unserer Messdaten
-- Große Community und Dokumentation; Probleme sind meist schon gelöst
-- Passt gut zu Quarto: Text, Code und Grafiken in einer präsentation kombinierbar
+
+-   Saubere Trennung von Code, Daten und Ergebnis: Analysen bleiben nachvollziehbar
+-   Starke Visualisierung (z.B. `ggplot2`) für schnelle Diagramme unserer Messdaten
+-   Große Community und Dokumentation; Probleme sind meist schon gelöst
+-   Passt gut zu Quarto: Text, Code und Grafiken in einer präsentation kombinierbar
 
 ## Slide 2
 
@@ -39,8 +41,13 @@ When you click the **Render** button a presentation will be generated that inclu
 ```
 
 ## Daten einlesen - Steinfurter Straße
+
+Als erstes Laden wir die Daten von der Steinfurter Straße:
+
 <details>
+
 <summary>Code</summary>
+
 ```{r}
 #| echo: true 
 #| message: true
@@ -58,6 +65,7 @@ data <- read.csv2(
 )
 colnames(data) <- csv_headers
 ```
+
 </details>
 
 ```{css, echo=FALSE}
@@ -219,3 +227,191 @@ ggplot(data, aes(x = Zeit, y = absolute_feuchte)) +
   ) +
   scale_x_datetime(date_labels = "%d.%m", date_breaks = "3 days")
 ```
+## Was ist Autokorrelation?
+
+**Autokorrelation** misst, wie stark ein Messwert mit früheren Messwerten zusammenhängt.
+
+-   Wenn die Temperatur **jetzt** hoch ist, ist sie wahrscheinlich auch in 10 Minuten noch hoch
+-   Je weiter wir in die Vergangenheit schauen, desto schwächer wird dieser Zusammenhang
+-   **Hohe Autokorrelation** = starke Ähnlichkeit zwischen Werten mit bestimmtem Zeitabstand
+
+## Was ist Autokorrelation?
+
+**Mathematisch:** $$
+\text{ACF}(k) = \frac{\text{Kovarianz}(X_t, X_{t-k})}{\text{Varianz}(X_t)}
+$$
+
+wobei $k$ die Anzahl der Zeitschritte (Lag) zurück ist.
+
+## Autokorrelation berechnen in R
+
+```{r}
+#| echo: true
+#| eval: false
+# acf() berechnet die Autokorrelation für verschiedene Lags
+# lag.max = 432 entspricht 3 Tagen (432 × 10min = 4320min = 72h)
+acf(data$`Durschnittl. Lufttemperatur [°C]`, lag.max = 432)
+```
+
+-   **Lag 0**: Korrelation mit sich selbst (immer 1.0)
+-   **Lag 144**: Korrelation mit dem Wert von vor 24h (144 × 10min = 1440min = 24h)
+-   **Lag 288**: Korrelation mit dem Wert von vor 48h
+
+Die blauen gestrichelten Linien zeigen die **Signifikanzgrenze** – Werte darüber sind statistisch bedeutsam.
+
+## Autokorrelation der Temperatur
+
+```{r}
+#| echo: False
+#| fig-width: 14
+#| fig-height: 6
+
+# ACF-Daten berechnen
+temp_acf <- acf(data$`Durschnittl. Lufttemperatur [°C]`, 
+                lag.max = 432, 
+                plot = FALSE)
+
+# Plot erstellen
+plot(temp_acf, 
+     main = "Autokorrelation der Lufttemperatur (10-Minuten-Daten)",
+     xlab = "Lag (10-Minuten-Schritte)",
+     ylab = "ACF",
+     ci.col = "blue")
+
+# 24h-Markierungen hinzufügen (alle 144 Lags = 24h)
+abline(v = c(144, 288, 432), col = "red", lty = 2, lwd = 2)
+
+# Beschriftung für die 24h-Marken
+text(x = 144, y = 0.9, labels = "24h", col = "darkred", pos = 3, cex = 1.2, font = 2)
+text(x = 288, y = 0.9, labels = "48h", col = "darkred", pos = 3, cex = 1.2, font = 2)
+text(x = 432, y = 0.9, labels = "72h", col = "darkred", pos = 3, cex = 1.2, font = 2)
+```
+
+**Beobachtung:** Deutliche Spitzen alle 24 Stunden → Täglicher Temperaturzyklus!
+
+## Interpretation: Tagesverlauf in den Daten
+
+-   **Hohe Autokorrelation bei Lag 144 (24h):** Die Temperatur jetzt ist stark korreliert mit der Temperatur zur gleichen Uhrzeit gestern
+-   **Wellenmuster:** Die Autokorrelation oszilliert mit einer Periode von \~144 Lags
+-   **Ursache:** Der tägliche Sonnenzyklus (Tag/Nacht) erzeugt eine periodische Temperaturschwankung
+
+→ Um **langfristige Trends** zu erkennen, müssen wir diesen **Tagesverlauf herausrechnen**!
+
+## Periodische Komponente (Tagesverlauf) rausrechnen
+
+Um langfristigere Trends in der Temperatur besser zu erkennen, können wir die Temperaturschwankungen durch den Tagesverlauf herausrechnen.
+
+**Idee:** Der Tagesverlauf ist **periodisch** – wir können ihn als **Sinusfunktion** modellieren und optimieren!
+
+$$T(t) = T_0 + A \cdot \sin\left(\frac{2\pi \cdot t}{P} + \phi\right)$$
+
+wobei $T_0$ = Basispegel, $A$ = Amplitude, $P$ = Periode (1440 min = 24h), $\phi$ = Phasenverschiebung, $t$ = Zeit
+
+```{r}
+#| echo: False
+library(lubridate)
+
+# Zeitstempel in echte Datumszeit umwandeln
+data$Zeitstempel <- dmy_hm(data$Zeitstempel)
+
+# Zeit in Minuten seit Anfang (für Sinus-Fit)
+data$t_min <- as.numeric(difftime(data$Zeitstempel, data$Zeitstempel[1], units = "mins"))
+
+# Temperatur als numeric
+data$temp_num <- as.numeric(gsub(",", ".", data$`Durschnittl. Lufttemperatur [°C]`))
+
+# Sinus-Modell fitten mit nls (nonlinear least squares)
+fit <- nls(temp_num ~ T0 + A * sin(2*pi*t_min/P + phi),
+           data = data,
+           start = list(T0 = mean(data$temp_num, na.rm=T), 
+                       A = (max(data$temp_num, na.rm=T) - min(data$temp_num, na.rm=T))/2,
+                       P = 1440, 
+                       phi = 0),
+           na.action = na.exclude)
+
+# Fitted Tagesverlauf extrahieren
+data$Tagesverlauf_fit <- predict(fit)
+
+# Bereinigte Daten: Tagesverlauf abziehen
+data$Temp_bereinigt <- data$temp_num - data$Tagesverlauf_fit
+
+# Optimierte Parameter anzeigen
+summary(fit)
+```
+
+## Vergleich: Modell vs. Rohdaten und bereinigte Daten
+
+```{r}
+#| echo: false
+#| fig-width: 30
+#| fig-height: 12
+
+par(mfrow = c(2, 1), mar = c(4, 4, 3, 1))
+
+# 1) Rohdaten mit modelliertem Tagesverlauf (Sinus) überlagert
+plot(data$Zeitstempel, 
+  data$temp_num,
+  type = "l", 
+  main = "Rohdaten vs. modellierter Tagesverlauf (Sinus-Fit)",
+  xlab = "Zeit",
+  ylab = "Temperatur [°C]",
+  col = "gray30",
+  lwd = 1)
+lines(data$Zeitstempel, data$Tagesverlauf_fit, col = "red", lwd = 2)
+legend("topleft", 
+    legend = c("Rohdaten", "Sinus-Modell"),
+    col = c("gray30", "red"),
+    lty = 1, lwd = c(1,2), bty = "n")
+
+# 2) Bereinigte Daten (Rohdaten minus modellierter Tagesverlauf)
+plot(data$Zeitstempel, 
+  data$Temp_bereinigt,
+  type = "l", 
+  main = "Bereinigte Daten: Temperaturanomalie (Tagesverlauf herausgerechnet)",
+  xlab = "Zeit",
+  ylab = "Abweichung vom Tagesverlauf [°C]",
+  col = "darkred",
+  lwd = 1)
+abline(h = 0, col = "gray", lty = 2)
+
+par(mfrow = c(1, 1))
+```
+
+## Autokorrelation: Rohdaten vs. bereinigte Daten
+
+```{r}
+#| echo: false
+#| fig-width: 18
+#| fig-height: 5
+
+par(mfrow = c(1, 2), mar = c(4, 4, 3, 1))
+
+# ACF Rohdaten
+acf_raw <- acf(na.omit(data$temp_num), lag.max = 432, plot = FALSE)
+plot(acf_raw, 
+  main = "ACF Rohdaten (10-Min)",
+  xlab = "Lag (10-Min-Schritte)",
+  ylab = "ACF",
+  ci.col = "blue")
+abline(v = c(144, 288, 432), col = "red", lty = 2, lwd = 2)
+text(x = 144, y = 0.9, labels = "24h", col = "darkred", pos = 3, cex = 1.2, font = 2)
+text(x = 288, y = 0.9, labels = "48h", col = "darkred", pos = 3, cex = 1.2, font = 2)
+text(x = 432, y = 0.9, labels = "72h", col = "darkred", pos = 3, cex = 1.2, font = 2)
+
+# ACF bereinigte Daten
+acf_clean <- acf(na.omit(data$Temp_bereinigt), lag.max = 432, plot = FALSE)
+plot(acf_clean, 
+  main = "ACF bereinigt (Anomalie)",
+  xlab = "Lag (10-Min-Schritte)",
+  ylab = "ACF",
+  ci.col = "blue")
+abline(v = c(144, 288, 432), col = "red", lty = 2, lwd = 2)
+text(x = 144, y = 0.9, labels = "24h", col = "darkred", pos = 3, cex = 1.2, font = 2)
+text(x = 288, y = 0.9, labels = "48h", col = "darkred", pos = 3, cex = 1.2, font = 2)
+text(x = 432, y = 0.9, labels = "72h", col = "darkred", pos = 3, cex = 1.2, font = 2)
+
+par(mfrow = c(1, 1))
+```
+
+-   Links: starke Peaks bei 24h/48h/72h in den Rohdaten
+-   Rechts: Peaks sind deutlich abgeschwächt → Tageszyklus erfolgreich entfernt
