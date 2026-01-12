@@ -39,13 +39,12 @@ When you click the **Render** button a presentation will be generated that inclu
 ```
 
 ## Daten einlesen - Steinfurter Straße
-
+<details>
+<summary>Code</summary>
 ```{r}
-#| echo: true
-#| message: false
+#| echo: true 
+#| message: true
 
-# CSV-Datei einlesen (Semikolon-getrennt, Komma als Dezimalzeichen)
-# Die ersten 5 Zeilen sind Header/Metadaten, daher skip = 5
 steinfurter <- read.csv2(
   "data/data-as-csv/metMastSteinfurterStr.csv",
   skip = 5,
@@ -60,7 +59,9 @@ colnames(steinfurter) <- c(
   "LW_ein", "LW_aus", "CNR4TC_Avg", "WS_USA", "WindDir_USA", "WindDir_SD_USA",
   "WS_Prop", "WindDir_Prop", "WindDir_SD_Prop", "BattV_Min", "PTemp_Min", "PTemp_Max"
 )
+```
+</details>
 
-# Erste Zeilen anzeigen
-head(steinfurter)
+```{r}
+print(steinfurter)
 ```
