@@ -4,6 +4,7 @@ author: "Robin Gummels, Humam Hikmat, Lenn Kruck"
 format: 
   revealjs: 
     theme: dark
+    self-contained: true
 editor: visual
 ---
 
@@ -26,3 +27,15 @@ When you click the **Render** button a presentation will be generated that inclu
 #| echo: true
 1 + 1
 ```
+
+## Folientitel
+
+<details>
+<summary>Code</summary>
+
+```{r}
+#| echo: true
+1 + 1
+```
+
+</details>
