@@ -1,5 +1,5 @@
 ---
-title: "Hier Titel einfügen"
+title: "Auswertung Temperatur- und Feuchtigkeits-Daten 18.11.2025-09.12.2025"
 author: "Robin Gummels, Humam Hikmat, Lenn Kruck"
 format: 
   revealjs: 
@@ -8,9 +8,19 @@ format:
 editor: visual
 ---
 
-## Slide 1
+# Wir haben unsere Auswertung mit der Programmiersprache R gemacht
 
-Quarto enables you to weave together content and executable code into a finished presentation. To learn more about Quarto presentations see <https://quarto.org/docs/presentations/>.
+## Was ist R?
+- Open-Source Programmiersprache speziell für Statistik und Datenanalyse
+- Bringt tausende Pakete für Auswertung, Visualisierung und Reproduzierbarkeit mit
+- Funktioniert interaktiv (Konsole/RStudio) und in Skripten für reproduzierbare Workflows
+- Läuft auf allen gängigen Betriebssystemen und ist frei verfügbar
+
+## Warum R?
+- Saubere Trennung von Code, Daten und Ergebnis: Analysen bleiben nachvollziehbar
+- Starke Visualisierung (z.B. `ggplot2`) für schnelle Diagramme unserer Messdaten
+- Große Community und Dokumentation; Probleme sind meist schon gelöst
+- Passt gut zu Quarto: Text, Code und Grafiken in einer präsentation kombinierbar
 
 ## Slide 2
 
