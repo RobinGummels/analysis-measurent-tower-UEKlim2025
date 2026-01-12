@@ -103,3 +103,119 @@ DT::datatable(
   style = "bootstrap"
 )
 ```
+
+## Absolute Feuchte - Theorie {.smaller}
+
+::: {.columns}
+::: {.column width="50%"}
+**Formel:**
+$$a = \frac{e \cdot 100}{R_w \cdot T}$$
+
+| Symbol | Bedeutung | Einheit |
+|--------|-----------|---------|
+| $a$ | Absolute Feuchte | kg·m⁻³ |
+| $e$ | Dampfdruck | hPa |
+| $R_w$ | Gaskonstante H₂O | 461,5 J/(kg·K) |
+| $T$ | Lufttemperatur | K |
+:::
+
+::: {.column width="50%"}
+**Dampfdruck aus rel. Feuchte:**
+$$e = \frac{RH}{100} \cdot e_s$$
+
+**Sättigungsdampfdruck (Magnus):**
+$$e_s = 6{,}112 \cdot e^{\frac{17{,}67 \cdot T_C}{T_C + 243{,}5}}$$
+:::
+:::
+
+## Absolute Feuchte - Berechnung
+
+<details>
+<summary>Code</summary>
+```{r}
+#| echo: true
+#| warning: false
+
+# Spezifische Gaskonstante für Wasserdampf [J/(kg·K)]
+Rw <- 461.5
+
+# Temperatur und rel. Feuchte aus den korrekten Spalten
+temperatur <- data$`Durschnittl. Lufttemperatur [°C]`
+rel_feuchte <- data$`Durschnittl. rel. Luftfeuchtigkeit [%]`
+
+# Temperatur in Kelvin umrechnen
+T_kelvin <- temperatur + 273.15
+
+# Sättigungsdampfdruck nach Magnus-Formel [hPa]
+es <- 6.112 * exp((17.67 * temperatur) / (temperatur + 243.5))
+
+# Aktueller Dampfdruck [hPa]
+e <- (rel_feuchte / 100) * es
+
+# Absolute Feuchte [kg/m³]
+# Formel: a = (e * 100) / (Rw * T)
+# Faktor 100: Umrechnung hPa -> Pa
+data$absolute_feuchte <- (e * 100) / (Rw * T_kelvin)
+
+# Zeitstempel konvertieren
+data$Zeit <- as.POSIXct(data$Zeitstempel, format = "%d.%m.%Y %H:%M")
+```
+</details>
+```{r}
+#| echo: true
+summary(data$absolute_feuchte)
+```
+
+## Absolute Feuchte - Zeitreihe
+
+<details>
+<summary>Code</summary>
+```{r}
+#| echo: true
+#| fig-width: 10
+#| fig-height: 5.5
+
+library(ggplot2)
+
+ggplot(data, aes(x = Zeit, y = absolute_feuchte)) +
+  geom_line(color = "#00BFC4", linewidth = 0.5) +
+  labs(
+    title = "Absolute Feuchte - Steinfurter Straße",
+    subtitle = "Zeitraum: 18.11.2025 - 09.12.2025",
+    x = "Datum",
+    y = expression("Absolute Feuchte [kg m"^{-3}*"]"),
+  ) +
+  theme_minimal(base_size = 14) +
+  theme(
+    plot.title = element_text(face = "bold", size = 16),
+    plot.subtitle = element_text(color = "gray60"),
+    axis.title = element_text(face = "bold"),
+    panel.grid.minor = element_blank()
+  ) +
+  scale_x_datetime(date_labels = "%d.%m", date_breaks = "3 days")
+```
+</details>
+```{r}
+#| echo: false
+#| fig-width: 10
+#| fig-height: 5.5
+
+library(ggplot2)
+
+ggplot(data, aes(x = Zeit, y = absolute_feuchte)) +
+  geom_line(color = "#00BFC4", linewidth = 0.5) +
+  labs(
+    title = "Absolute Feuchte - Steinfurter Straße",
+    subtitle = "Zeitraum: 18.11.2025 - 09.12.2025",
+    x = "Datum",
+    y = expression("Absolute Feuchte [kg m"^{-3}*"]"),
+  ) +
+  theme_minimal(base_size = 14) +
+  theme(
+    plot.title = element_text(face = "bold", size = 16),
+    plot.subtitle = element_text(color = "gray60"),
+    axis.title = element_text(face = "bold"),
+    panel.grid.minor = element_blank()
+  ) +
+  scale_x_datetime(date_labels = "%d.%m", date_breaks = "3 days")
+```
