@@ -39,6 +39,8 @@ When you click the **Render** button a presentation will be generated that inclu
 ```
 
 ## Daten einlesen - Steinfurter Straße
+
+Als erstes Laden wir die Daten von der Steinfurter Straße nach `R`:
 <details>
 <summary>Code</summary>
 ```{r}
