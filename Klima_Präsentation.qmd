@@ -142,8 +142,8 @@ Die blauen gestrichelten Linien zeigen die **Signifikanzgrenze** – Werte darü
 ## Autokorrelation der Temperatur
 
 ```{r}
-#| echo: false
-#| fig-width: 10
+#| echo: False
+#| fig-width: 14
 #| fig-height: 6
 
 # ACF-Daten berechnen
@@ -162,9 +162,9 @@ plot(temp_acf,
 abline(v = c(144, 288, 432), col = "red", lty = 2, lwd = 2)
 
 # Beschriftung für die 24h-Marken
-text(x = 144, y = 0.9, labels = "24h", col = "red", pos = 3, cex = 1.2, font = 2)
-text(x = 288, y = 0.9, labels = "48h", col = "red", pos = 3, cex = 1.2, font = 2)
-text(x = 432, y = 0.9, labels = "72h", col = "red", pos = 3, cex = 1.2, font = 2)
+text(x = 144, y = 0.9, labels = "24h", col = "darkred", pos = 3, cex = 1.2, font = 2)
+text(x = 288, y = 0.9, labels = "48h", col = "darkred", pos = 3, cex = 1.2, font = 2)
+text(x = 432, y = 0.9, labels = "72h", col = "darkred", pos = 3, cex = 1.2, font = 2)
 ```
 
 **Beobachtung:** Deutliche Spitzen alle 24 Stunden → Täglicher Temperaturzyklus!
@@ -177,8 +177,8 @@ text(x = 432, y = 0.9, labels = "72h", col = "red", pos = 3, cex = 1.2, font = 2
 
 → Um **langfristige Trends** zu erkennen, müssen wir diesen **Tagesverlauf herausrechnen**!
 
-## Saisonale Komponente (Tagesverlauf) rausrechnen
-Um die Temperaturänderung ohne des Tagesverlauf zu erkennen, können wir diese statisch "herausrechnen":
+## Periodische Komponente (Tagesverlauf) rausrechnen
+Um langfristigere Trends in der Temperatur besser zu erkennen, können die Temperaturschwankungen durch den Tagesverlauf herausrechnen:
 ```{r}
 
 ```
