@@ -22,35 +22,6 @@ editor: visual
 - Große Community und Dokumentation; Probleme sind meist schon gelöst
 - Passt gut zu Quarto: Text, Code und Grafiken in einer präsentation kombinierbar
 
-## Daten laden mit R
-```{r}
-#| echo: true
-#| message: true
-library(readr)
-
-# Die Daten vom Logger laden
-data = read_csv2(file = "data/data-as-csv/metMastSteinfurterStr.csv", 
-                 skip = 5, col_names = FALSE, show_col_types = FALSE)
-print(data)
-```
-
-## Daten laden mit R
-```{r}
-#| echo: true
-# Spaltennamen aus Zeile 1 lesen (Semikolon-getrennt)
-csv_headers = read.csv2(file = "data/data-as-csv/metMastSteinfurterStr.csv", 
-                        header = FALSE, nrows = 1, as.is = TRUE)
-print(csv_headers)
-```
-
-## Daten laden mit R
-```{r}
-#| echo: true
-# Spaltennamen aus der neu ausgelesenen Kopfzeile setzen
-colnames(data) = csv_headers
-data
-```
-
 ## Slide 2
 
 When you click the **Render** button a document will be generated that includes:
