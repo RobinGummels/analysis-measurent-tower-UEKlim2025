@@ -1,5 +1,6 @@
 ---
 title: "Hier Titel einfügen"
+author: "Robin Gummels, Humam Hikmat, Lenn Kruck"
 format: 
   revealjs: 
     theme: dark
