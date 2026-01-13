@@ -5,6 +5,7 @@ format:
   revealjs: 
     theme: dark
     self-contained: true
+    slide-number: true
 editor: visual
 ---
 
@@ -88,7 +89,7 @@ colnames(data) <- csv_headers
 
 ```{r}
 DT::datatable(
-  data,
+  head(data, 200),
   options = list(
     scrollY = "350px",
     scrollX = TRUE,
