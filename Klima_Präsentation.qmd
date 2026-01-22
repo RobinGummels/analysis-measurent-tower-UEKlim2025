@@ -59,6 +59,9 @@ data <- read.csv2(
   dec = ","
 )
 colnames(data) <- csv_headers
+
+# Index für Plots erstellen
+data$index <- 1:nrow(data)
 ```
 </details>
 
@@ -105,3 +108,114 @@ DT::datatable(
   style = "bootstrap"
 )
 ```
+
+## Zusammenfassung Lufttemperatur
+
+```{r}
+summary(data$`Durschnittl. Lufttemperatur [°C]`)
+```
+
+```{r}
+#| echo: false
+#| fig-width: 10
+#| fig-height: 5
+
+library(ggplot2)
+
+ggplot(data, aes(x = index, y = `Durschnittl. Lufttemperatur [°C]`)) +
+  geom_line(color = "#E74C3C", linewidth = 1) +
+  labs(title = "Durchschnittliche Lufttemperatur",
+       subtitle = "Messzeitraum: 18.11.2025 - 09.12.2025",
+       x = "Messung (Index)",
+       y = "Temperatur [°C]") +
+  theme_minimal() +
+  theme(plot.title = element_text(size = 16, face = "bold"),
+        plot.subtitle = element_text(size = 12))
+```
+
+## Zusammenfassung Luftfeuchtigkeit
+
+```{r}
+summary(data$`Durschnittl. rel. Luftfeuchtigkeit [%]`)
+```
+
+```{r}
+#| echo: false
+#| fig-width: 10
+#| fig-height: 5
+
+library(ggplot2)
+
+ggplot(data, aes(x = index, y = `Durschnittl. rel. Luftfeuchtigkeit [%]`)) +
+  geom_line(color = "#3498DB", linewidth = 1) +
+  labs(title = "Durchschnittliche relative Luftfeuchtigkeit",
+       subtitle = "Messzeitraum: 18.11.2025 - 09.12.2025",
+       x = "Messung (Index)",
+       y = "Relative Luftfeuchtigkeit [%]") +
+  theme_minimal() +
+  theme(plot.title = element_text(size = 16, face = "bold"),
+        plot.subtitle = element_text(size = 12))
+```
+
+
+
+## Kombinierter Plot 
+
+```{r}
+#| echo: false
+#| fig-width: 10
+#| fig-height: 6
+
+library(ggplot2)
+
+# Primäre und sekundäre Achse
+ggplot(data, aes(x = index)) +
+  geom_line(aes(y = `Durschnittl. Lufttemperatur [°C]`, 
+                color = "Temperatur"), linewidth = 1) +
+  geom_line(aes(y = `Durschnittl. rel. Luftfeuchtigkeit [%]` / 10, 
+                color = "Luftfeuchtigkeit"), linewidth = 1) +
+  scale_y_continuous(
+    name = "Temperatur [°C]",
+    sec.axis = sec_axis(~.*10, name = "Relative Luftfeuchtigkeit [%]")
+  ) +
+  scale_color_manual(values = c("Temperatur" = "#E74C3C", 
+                                  "Luftfeuchtigkeit" = "#3498DB")) +
+  labs(title = "Temperatur und Luftfeuchtigkeit im Verlauf",
+       subtitle = "Steinfurter Straße",
+       x = "Messung (Index)",
+       color = "Messwert") +
+  theme_minimal() +
+  theme(legend.position = "bottom",
+        plot.title = element_text(size = 16, face = "bold"),
+        axis.title.y.left = element_text(color = "#E74C3C"),
+        axis.title.y.right = element_text(color = "#3498DB"))
+```
+
+<details>
+<summary>Code anzeigen</summary>
+```r
+library(ggplot2)
+
+# Primäre und sekundäre Achse
+ggplot(data, aes(x = index)) +
+  geom_line(aes(y = `Durschnittl. Lufttemperatur [°C]`, 
+                color = "Temperatur"), linewidth = 1) +
+  geom_line(aes(y = `Durschnittl. rel. Luftfeuchtigkeit [%]` / 10, 
+                color = "Luftfeuchtigkeit"), linewidth = 1) +
+  scale_y_continuous(
+    name = "Temperatur [°C]",
+    sec.axis = sec_axis(~.*10, name = "Relative Luftfeuchtigkeit [%]")
+  ) +
+  scale_color_manual(values = c("Temperatur" = "#E74C3C", 
+                                  "Luftfeuchtigkeit" = "#3498DB")) +
+  labs(title = "Temperatur und Luftfeuchtigkeit im Verlauf",
+       subtitle = "Steinfurter Straße",
+       x = "Messung (Index)",
+       color = "Messwert") +
+  theme_minimal() +
+  theme(legend.position = "bottom",
+        plot.title = element_text(size = 16, face = "bold"),
+        axis.title.y.left = element_text(color = "#E74C3C"),
+        axis.title.y.right = element_text(color = "#3498DB"))
+```
+</details>
