@@ -25,22 +25,6 @@ editor: visual
 -   Große Community und Dokumentation; Probleme sind meist schon gelöst
 -   Passt gut zu Quarto: Text, Code und Grafiken in einer präsentation kombinierbar
 
-## Slide 2
-
-When you click the **Render** button a document will be generated that includes:
-
--   Content authored with markdown
--   Output from executable code
-
-## Slide 3 mit Code 1
-
-When you click the **Render** button a presentation will be generated that includes both content and the output of embedded code. You can embed code like this:
-
-```{r}
-#| echo: true
-1 + 1
-```
-
 ## Daten einlesen - Steinfurter Straße
 
 Als erstes Laden wir die Daten von der Steinfurter Straße:
@@ -115,6 +99,7 @@ DT::datatable(
   style = "bootstrap"
 )
 ```
+
 ## Lufttemperatur - Zeitreihe
 
 ```{r}
@@ -142,6 +127,45 @@ ggplot(data, aes(x = Zeit, y = `Durschnittl. Lufttemperatur [°C]`)) +
         plot.subtitle = element_text(size = 12))
 ```
 
+## Tagesgang: Daily Min/Mean/Max + Amplitude
+
+```{r}
+#| echo: false
+#| fig-width: 12
+#| fig-height: 5.5
+
+library(dplyr)
+
+daily <- data %>%
+  mutate(Datum = as.Date(Zeit)) %>%
+  group_by(Datum) %>%
+  summarise(
+    min = min(`Durschnittl. Lufttemperatur [°C]`, na.rm = TRUE),
+    max = max(`Durschnittl. Lufttemperatur [°C]`, na.rm = TRUE),
+    mean = mean(`Durschnittl. Lufttemperatur [°C]`, na.rm = TRUE),
+    amplitude = max - min,
+    .groups = "drop"
+  )
+
+ggplot(daily, aes(x = Datum)) +
+  geom_col(aes(y = amplitude, fill = "Amplitude"), alpha = 0.7) +
+  geom_linerange(aes(ymin = min, ymax = max, color = "Min–Max"), linewidth = 0.9) +
+  geom_point(aes(y = mean, color = "Mittelwert"), size = 2.2) +
+  labs(
+    title = "Tagesgang kompakt",
+    subtitle = "Min/Mean/Max und Tagesamplitude",
+    x = "Datum",
+    y = "Temperatur [°C]"
+  ) +
+  scale_fill_manual(name = "Legende", values = c("Amplitude" = "#F4A261")) +
+  scale_color_manual(name = "Legende", values = c("Min–Max" = "#2A9D8F", "Mittelwert" = "#264653")) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(size = 16, face = "bold"),
+    plot.subtitle = element_text(size = 12)
+  )
+```
+
 ## Luftfeuchtigkeit - Zeitreihe
 
 ```{r}
@@ -165,8 +189,6 @@ ggplot(data, aes(x = Zeit, y = `Durschnittl. rel. Luftfeuchtigkeit [%]`)) +
   theme(plot.title = element_text(size = 16, face = "bold"),
         plot.subtitle = element_text(size = 12))
 ```
-
-
 
 ## Lufttemperatur und Luftfeuchtigkeit
 
@@ -200,38 +222,113 @@ ggplot(data, aes(x = Zeit)) +
         axis.title.y.right = element_text(color = "#3498DB"))
 ```
 
-<details>
-<summary>Code anzeigen</summary>
+## Temperatur- und Feuchteänderung: Stündlich aggregiert
 
+```{r}
+#| echo: false
+#| fig-width: 10
+#| fig-height: 6
+
+library(dplyr)
+library(lubridate)
+library(ggplot2)
+
+# Stündliche Aggregation
+data_hourly <- data |>
+  mutate(Hour = floor_date(Zeit, "hour")) |>
+  group_by(Hour) |>
+  summarise(
+    temp_mean = mean(`Durschnittl. Lufttemperatur [°C]`, na.rm = TRUE),
+    rh_mean = mean(`Durschnittl. rel. Luftfeuchtigkeit [%]`, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+# Stündliche Änderungen
+data_hourly$delta_temp_h <- c(NA, diff(data_hourly$temp_mean))
+data_hourly$delta_rh_h   <- c(NA, diff(data_hourly$rh_mean))
+
+# Korrelation der stündlichen Steigungen
+r_val_h <- cor(data_hourly$delta_temp_h, data_hourly$delta_rh_h, use = "complete.obs")
+r_sq_h  <- r_val_h^2
+
+ggplot(data_hourly, aes(x = delta_temp_h, y = delta_rh_h)) +
+  geom_point(alpha = 0.4, size = 2, color = "#2A9D8F") +
+  geom_smooth(method = "lm", se = TRUE, color = "#E76F51", linewidth = 1.2) +
+  geom_hline(yintercept = 0, color = "gray50", linetype = 2) +
+  geom_vline(xintercept = 0, color = "gray50", linetype = 2) +
+  labs(
+    title = "Stündliche Änderungen: Temperatur vs. rel. Luftfeuchte",
+    subtitle = paste0("Antiproportionaler Zusammenhang: R² = ", sprintf("%.3f", r_sq_h)),
+    x = "Δ Temperatur (°C pro Stunde)",
+    y = "Δ rel. Luftfeuchte (% pro Stunde)"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(size = 16, face = "bold"),
+    plot.subtitle = element_text(size = 12)
+  )
+```
+
+## Stündliche Änderungen: Ohne Nullwerte (ΔRH = 0)
+
+```{r}
+#| echo: false
+#| fig-width: 10
+#| fig-height: 6
+
+# Filtern: Nur Punkte mit ΔRH ≠ 0
+data_hourly_filtered <- data_hourly |>
+  filter(delta_rh_h != 0, !is.na(delta_rh_h), !is.na(delta_temp_h))
+
+# Korrelation der gefilterten Steigungen
+r_val_filt <- cor(data_hourly_filtered$delta_temp_h, data_hourly_filtered$delta_rh_h, use = "complete.obs")
+r_sq_filt  <- r_val_filt^2
+
+ggplot(data_hourly_filtered, aes(x = delta_temp_h, y = delta_rh_h)) +
+  geom_point(alpha = 0.4, size = 2, color = "#2A9D8F") +
+  geom_smooth(method = "lm", se = TRUE, color = "#E76F51", linewidth = 1.2) +
+  geom_hline(yintercept = 0, color = "gray50", linetype = 2) +
+  geom_vline(xintercept = 0, color = "gray50", linetype = 2) +
+  labs(
+    title = "Stündliche Änderungen (gefiltert: ΔRH ≠ 0)",
+    subtitle = paste0("Antiproportionaler Zusammenhang: R² = ", sprintf("%.3f", r_sq_filt)),
+    x = "Δ Temperatur (°C pro Stunde)",
+    y = "Δ rel. Luftfeuchte (% pro Stunde)"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(size = 16, face = "bold"),
+    plot.subtitle = element_text(size = 12)
+  )
+```
 
 ## Absolute Feuchte - Theorie {.smaller}
 
-::: {.columns}
+::::: columns
 ::: {.column width="50%"}
-**Formel:**
-$$a = \frac{e \cdot 100}{R_w \cdot T}$$
+**Formel:** $$a = \frac{e \cdot 100}{R_w \cdot T}$$
 
-| Symbol | Bedeutung | Einheit |
-|--------|-----------|---------|
-| $a$ | Absolute Feuchte | kg·m⁻³ |
-| $e$ | Dampfdruck | hPa |
-| $R_w$ | Gaskonstante H₂O | 461,5 J/(kg·K) |
-| $T$ | Lufttemperatur | K |
+| Symbol | Bedeutung        | Einheit        |
+|--------|------------------|----------------|
+| $a$    | Absolute Feuchte | kg·m⁻³         |
+| $e$    | Dampfdruck       | hPa            |
+| $R_w$  | Gaskonstante H₂O | 461,5 J/(kg·K) |
+| $T$    | Lufttemperatur   | K              |
 :::
 
 ::: {.column width="50%"}
-**Dampfdruck aus rel. Feuchte:**
-$$e = \frac{RH}{100} \cdot e_s$$
+**Dampfdruck aus rel. Feuchte:** $$e = \frac{RH}{100} \cdot e_s$$
 
-**Sättigungsdampfdruck (Magnus):**
-$$e_s = 6{,}112 \cdot e^{\frac{17{,}67 \cdot T_C}{T_C + 243{,}5}}$$
+**Sättigungsdampfdruck (Magnus):** $$e_s = 6{,}112 \cdot e^{\frac{17{,}67 \cdot T_C}{T_C + 243{,}5}}$$
 :::
-:::
+:::::
 
 ## Absolute Feuchte - Berechnung
 
 <details>
+
 <summary>Code</summary>
+
 ```{r}
 #| echo: true
 #| warning: false
@@ -260,7 +357,9 @@ data$absolute_feuchte <- (e * 100) / (Rw * T_kelvin)
 # Zeitstempel konvertieren
 data$Zeit <- as.POSIXct(data$Zeitstempel, format = "%d.%m.%Y %H:%M")
 ```
+
 </details>
+
 ```{r}
 #| echo: true
 summary(data$absolute_feuchte)
@@ -269,7 +368,9 @@ summary(data$absolute_feuchte)
 ## Absolute Feuchte - Zeitreihe
 
 <details>
+
 <summary>Code</summary>
+
 ```{r}
 #| echo: true
 #| fig-width: 10
@@ -294,7 +395,9 @@ ggplot(data, aes(x = Zeit, y = absolute_feuchte)) +
   ) +
   scale_x_datetime(date_labels = "%d.%m", date_breaks = "3 days")
 ```
+
 </details>
+
 ```{r}
 #| echo: false
 #| fig-width: 10
@@ -319,6 +422,7 @@ ggplot(data, aes(x = Zeit, y = absolute_feuchte)) +
   ) +
   scale_x_datetime(date_labels = "%d.%m", date_breaks = "3 days")
 ```
+
 ## Was ist Autokorrelation?
 
 **Autokorrelation** misst, wie stark ein Messwert mit früheren Messwerten zusammenhängt.
@@ -508,7 +612,13 @@ par(mfrow = c(1, 1))
 -   Links: starke Peaks bei 24h/48h/72h in den Rohdaten
 -   Rechts: Peaks sind deutlich abgeschwächt → Tageszyklus erfolgreich entfernt
 
-```r
+## Wohin und Woher???
+
+<details>
+
+<summary>Code</summary>
+
+``` r
 library(ggplot2)
 
 # Primäre und sekundäre Achse
@@ -533,4 +643,7 @@ ggplot(data, aes(x = index)) +
         axis.title.y.left = element_text(color = "#E74C3C"),
         axis.title.y.right = element_text(color = "#3498DB"))
 ```
+
 </details>
+
+# Viele Dank für eure Aufmerksamkeit
