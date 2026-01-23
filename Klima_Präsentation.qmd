@@ -369,8 +369,6 @@ Die **absolute Luftfeuchtigkeit** gibt an, wie viel Wasserdampf tatsächlich in 
 - **Unterschied zur relativen Feuchte:** Die relative Feuchte (%) zeigt, wie "voll" die Luft ist – die absolute zeigt die tatsächliche Wassermenge
 :::
 
-**Beispiel:** 10 g/m³ bedeutet: In jedem Kubikmeter Luft sind 10 Gramm Wasserdampf enthalten.
-
 ## Absolute Feuchte - Theorie {.smaller}
 
 ::::: columns
