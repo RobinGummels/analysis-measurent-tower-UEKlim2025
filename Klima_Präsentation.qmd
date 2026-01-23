@@ -103,6 +103,13 @@ DT::datatable(
 ## Lufttemperatur - Zeitreihe
 
 ```{r}
+# Zeitstempel konvertieren
+data$Zeit <- as.POSIXct(data$Zeitstempel, format = "%d.%m.%Y %H:%M")
+
+# Monat extrahieren
+data$Monat <- format(data$Zeit, "%m")
+
+# Summary für gesamten Zeitraum
 summary(data$`Durschnittl. Lufttemperatur [°C]`)
 ```
 
@@ -110,9 +117,6 @@ summary(data$`Durschnittl. Lufttemperatur [°C]`)
 #| echo: false
 #| fig-width: 10
 #| fig-height: 5
-
-# Zeitstempel konvertieren
-data$Zeit <- as.POSIXct(data$Zeitstempel, format = "%d.%m.%Y %H:%M")
 
 library(ggplot2)
 
@@ -169,6 +173,7 @@ ggplot(daily, aes(x = Datum)) +
 ## Luftfeuchtigkeit - Zeitreihe
 
 ```{r}
+# Summary für gesamten Zeitraum
 summary(data$`Durschnittl. rel. Luftfeuchtigkeit [%]`)
 ```
 
@@ -301,6 +306,67 @@ ggplot(data_hourly_filtered, aes(x = delta_temp_h, y = delta_rh_h)) +
     plot.subtitle = element_text(size = 12)
   )
 ```
+## Vergleich - Temperatur
+
+::: {.columns}
+
+::: {.column width="50%"}
+
+```{r}
+# Summary für November
+cat("November 2025:\n")
+summary(data$`Durschnittl. Lufttemperatur [°C]`[data$Monat == "11"])
+
+cat("\nDezember 2025:\n")
+summary(data$`Durschnittl. Lufttemperatur [°C]`[data$Monat == "12"])
+```
+
+:::
+
+::: {.column width="50%"}
+
+![Klimatabelle Münster](Klimatabelle_Münster.png){width=100%}
+
+:::
+
+:::
+
+## Vergleich - Luftfeuchtigkeit
+
+::: {.columns}
+
+::: {.column width="50%"}
+
+```{r}
+cat("November 2025:\n")
+summary(data$`Durschnittl. rel. Luftfeuchtigkeit [%]`[data$Monat == "11"])
+
+cat("\nDezember 2025:\n")
+summary(data$`Durschnittl. rel. Luftfeuchtigkeit [%]`[data$Monat == "12"])
+```
+
+:::
+
+::: {.column width="50%"}
+
+![Klimatabelle Münster](Klimatabelle_Münster.png){width=100%}
+
+:::
+
+:::
+
+
+# Was ist die absolute Luftfeuchtigkeit?
+
+Die **absolute Luftfeuchtigkeit** gibt an, wie viel Wasserdampf tatsächlich in der Luft enthalten ist.
+
+::: {.incremental}
+- **Definition:** Masse des Wasserdampfs pro Volumeneinheit Luft (in g·m⁻³ oder kg·m⁻³)
+- **Unabhängig von der Temperatur:** Der Wert ändert sich nur, wenn Wasser verdunstet oder kondensiert
+- **Unterschied zur relativen Feuchte:** Die relative Feuchte (%) zeigt, wie "voll" die Luft ist – die absolute zeigt die tatsächliche Wassermenge
+:::
+
+**Beispiel:** 10 g/m³ bedeutet: In jedem Kubikmeter Luft sind 10 Gramm Wasserdampf enthalten.
 
 ## Absolute Feuchte - Theorie {.smaller}
 
@@ -349,7 +415,7 @@ es <- 6.112 * exp((17.67 * temperatur) / (temperatur + 243.5))
 # Aktueller Dampfdruck [hPa]
 e <- (rel_feuchte / 100) * es
 
-# Absolute Feuchte [kg/m³]
+# Absolute Feuchte [kg·m⁻³]
 # Formel: a = (e * 100) / (Rw * T)
 # Faktor 100: Umrechnung hPa -> Pa
 data$absolute_feuchte <- (e * 100) / (Rw * T_kelvin)
@@ -418,6 +484,81 @@ ggplot(data, aes(x = Zeit, y = absolute_feuchte)) +
     plot.title = element_text(face = "bold", size = 16),
     plot.subtitle = element_text(color = "gray60"),
     axis.title = element_text(face = "bold"),
+    panel.grid.minor = element_blank()
+  ) +
+  scale_x_datetime(date_labels = "%d.%m", date_breaks = "3 days")
+```
+
+## Absolute vs. Relative Luftfeuchtigkeit
+<details>
+<summary>Code</summary>
+```{r}
+#| echo: true
+#| fig-width: 10
+#| fig-height: 5.5
+library(ggplot2)
+
+ggplot(data, aes(x = Zeit)) +
+  geom_line(aes(y = `Durschnittl. rel. Luftfeuchtigkeit [%]`, 
+                color = "Relative Luftfeuchtigkeit"), linewidth = 0.8) +
+  geom_line(aes(y = absolute_feuchte * 10000, 
+                color = "Absolute Luftfeuchtigkeit"), linewidth = 0.8) +
+  scale_y_continuous(
+    name = "Relative Luftfeuchtigkeit [%]",
+    sec.axis = sec_axis(~./10000, name = expression("Absolute Luftfeuchtigkeit [kg m"^{-3}*"]"))
+  ) +
+  scale_color_manual(values = c("Relative Luftfeuchtigkeit" = "#3498DB", 
+                                "Absolute Luftfeuchtigkeit" = "#00BFC4")) +
+  labs(title = "Vergleich: Absolute und Relative Luftfeuchtigkeit",
+       subtitle = "Steinfurter Straße | Messzeitraum: 18.11.2025 - 09.12.2025",
+       x = "Datum",
+       color = "Messgröße") +
+  theme_minimal(base_size = 14) +
+  theme(
+    legend.position = "bottom",
+    plot.title = element_text(face = "bold", size = 16),
+    plot.subtitle = element_text(color = "gray60"),
+    axis.title.y.left = element_text(color = "#3498DB", face = "bold"),
+    axis.title.y.right = element_text(color = "#00BFC4", face = "bold"),
+    axis.text.y.left = element_text(color = "#3498DB"),
+    axis.text.y.right = element_text(color = "#00BFC4"),
+    panel.grid.minor = element_blank()
+  ) +
+  scale_x_datetime(date_labels = "%d.%m", date_breaks = "3 days")
+```
+</details>
+
+```{r}
+#| echo: false
+#| fig-width: 10
+#| fig-height: 5.5
+
+library(ggplot2)
+
+ggplot(data, aes(x = Zeit)) +
+  geom_line(aes(y = `Durschnittl. rel. Luftfeuchtigkeit [%]`, 
+                color = "Relative Luftfeuchtigkeit"), linewidth = 0.8) +
+  geom_line(aes(y = absolute_feuchte * 10000, 
+                color = "Absolute Luftfeuchtigkeit"), linewidth = 0.8) +
+  scale_y_continuous(
+    name = "Relative Luftfeuchtigkeit [%]",
+    sec.axis = sec_axis(~./10000, name = expression("Absolute Luftfeuchtigkeit [kg m"^{-3}*"]"))
+  ) +
+  scale_color_manual(values = c("Relative Luftfeuchtigkeit" = "#3498DB", 
+                                "Absolute Luftfeuchtigkeit" = "#00BFC4")) +
+  labs(title = "Vergleich: Absolute und Relative Luftfeuchtigkeit",
+       subtitle = "Steinfurter Straße | Messzeitraum: 18.11.2025 - 09.12.2025",
+       x = "Datum",
+       color = "Messgröße") +
+  theme_minimal(base_size = 14) +
+  theme(
+    legend.position = "bottom",
+    plot.title = element_text(face = "bold", size = 16),
+    plot.subtitle = element_text(color = "gray60"),
+    axis.title.y.left = element_text(color = "#3498DB", face = "bold"),
+    axis.title.y.right = element_text(color = "#00BFC4", face = "bold"),
+    axis.text.y.left = element_text(color = "#3498DB"),
+    axis.text.y.right = element_text(color = "#00BFC4"),
     panel.grid.minor = element_blank()
   ) +
   scale_x_datetime(date_labels = "%d.%m", date_breaks = "3 days")
@@ -611,39 +752,5 @@ par(mfrow = c(1, 1))
 
 -   Links: starke Peaks bei 24h/48h/72h in den Rohdaten
 -   Rechts: Peaks sind deutlich abgeschwächt → Tageszyklus erfolgreich entfernt
-
-## Wohin und Woher???
-
-<details>
-
-<summary>Code</summary>
-
-``` r
-library(ggplot2)
-
-# Primäre und sekundäre Achse
-ggplot(data, aes(x = index)) +
-  geom_line(aes(y = `Durschnittl. Lufttemperatur [°C]`, 
-                color = "Temperatur"), linewidth = 1) +
-  geom_line(aes(y = `Durschnittl. rel. Luftfeuchtigkeit [%]` / 10, 
-                color = "Luftfeuchtigkeit"), linewidth = 1) +
-  scale_y_continuous(
-    name = "Temperatur [°C]",
-    sec.axis = sec_axis(~.*10, name = "Relative Luftfeuchtigkeit [%]")
-  ) +
-  scale_color_manual(values = c("Temperatur" = "#E74C3C", 
-                                  "Luftfeuchtigkeit" = "#3498DB")) +
-  labs(title = "Temperatur und Luftfeuchtigkeit im Verlauf",
-       subtitle = "Steinfurter Straße",
-       x = "Messung (Index)",
-       color = "Messwert") +
-  theme_minimal() +
-  theme(legend.position = "bottom",
-        plot.title = element_text(size = 16, face = "bold"),
-        axis.title.y.left = element_text(color = "#E74C3C"),
-        axis.title.y.right = element_text(color = "#3498DB"))
-```
-
-</details>
 
 # Viele Dank für eure Aufmerksamkeit
