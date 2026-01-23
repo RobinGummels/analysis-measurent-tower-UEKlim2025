@@ -118,6 +118,13 @@ DT::datatable(
 ## Lufttemperatur - Zeitreihe
 
 ```{r}
+# Zeitstempel konvertieren
+data$Zeit <- as.POSIXct(data$Zeitstempel, format = "%d.%m.%Y %H:%M")
+
+# Monat extrahieren
+data$Monat <- format(data$Zeit, "%m")
+
+# Summary für gesamten Zeitraum
 summary(data$`Durschnittl. Lufttemperatur [°C]`)
 ```
 
@@ -125,9 +132,6 @@ summary(data$`Durschnittl. Lufttemperatur [°C]`)
 #| echo: false
 #| fig-width: 10
 #| fig-height: 5
-
-# Zeitstempel konvertieren
-data$Zeit <- as.POSIXct(data$Zeitstempel, format = "%d.%m.%Y %H:%M")
 
 library(ggplot2)
 
@@ -145,6 +149,7 @@ ggplot(data, aes(x = Zeit, y = `Durschnittl. Lufttemperatur [°C]`)) +
 ## Luftfeuchtigkeit - Zeitreihe
 
 ```{r}
+# Summary für gesamten Zeitraum
 summary(data$`Durschnittl. rel. Luftfeuchtigkeit [%]`)
 ```
 
@@ -166,7 +171,54 @@ ggplot(data, aes(x = Zeit, y = `Durschnittl. rel. Luftfeuchtigkeit [%]`)) +
         plot.subtitle = element_text(size = 12))
 ```
 
+## Vergleich - Temperatur
 
+::: {.columns}
+
+::: {.column width="50%"}
+
+```{r}
+# Summary für November
+cat("November 2025:\n")
+summary(data$`Durschnittl. Lufttemperatur [°C]`[data$Monat == "11"])
+
+cat("\nDezember 2025:\n")
+summary(data$`Durschnittl. Lufttemperatur [°C]`[data$Monat == "12"])
+```
+
+:::
+
+::: {.column width="50%"}
+
+![Klimatabelle Münster](Klimatabelle_Münster.png){width=100%}
+
+:::
+
+:::
+
+## Vergleich - Luftfeuchtigkeit
+
+::: {.columns}
+
+::: {.column width="50%"}
+
+```{r}
+cat("November 2025:\n")
+summary(data$`Durschnittl. rel. Luftfeuchtigkeit [%]`[data$Monat == "11"])
+
+cat("\nDezember 2025:\n")
+summary(data$`Durschnittl. rel. Luftfeuchtigkeit [%]`[data$Monat == "12"])
+```
+
+:::
+
+::: {.column width="50%"}
+
+![Klimatabelle Münster](Klimatabelle_Münster.png){width=100%}
+
+:::
+
+:::
 
 ## Lufttemperatur und Luftfeuchtigkeit
 
