@@ -308,6 +308,8 @@ ggplot(data_hourly_filtered, aes(x = delta_temp_h, y = delta_rh_h)) +
 ```
 ## Vergleich - Temperatur
 
+![Klimatabelle Münster](Klimatabelle_Münster.png){width=100%}
+
 ::: {.columns}
 
 ::: {.column width="50%"}
@@ -316,22 +318,23 @@ ggplot(data_hourly_filtered, aes(x = delta_temp_h, y = delta_rh_h)) +
 # Summary für November
 cat("November 2025:\n")
 summary(data$`Durschnittl. Lufttemperatur [°C]`[data$Monat == "11"])
-
-cat("\nDezember 2025:\n")
-summary(data$`Durschnittl. Lufttemperatur [°C]`[data$Monat == "12"])
 ```
 
 :::
 
 ::: {.column width="50%"}
-
-![Klimatabelle Münster](Klimatabelle_Münster.png){width=100%}
-
+```{r}
+# Summary für Dezember
+cat("\nDezember 2025:\n")
+summary(data$`Durschnittl. Lufttemperatur [°C]`[data$Monat == "12"])
+```
 :::
 
 :::
 
 ## Vergleich - Luftfeuchtigkeit
+
+![Klimatabelle Münster](Klimatabelle_Münster.png){width=100%}
 
 ::: {.columns}
 
@@ -340,23 +343,23 @@ summary(data$`Durschnittl. Lufttemperatur [°C]`[data$Monat == "12"])
 ```{r}
 cat("November 2025:\n")
 summary(data$`Durschnittl. rel. Luftfeuchtigkeit [%]`[data$Monat == "11"])
-
-cat("\nDezember 2025:\n")
-summary(data$`Durschnittl. rel. Luftfeuchtigkeit [%]`[data$Monat == "12"])
 ```
 
 :::
 
 ::: {.column width="50%"}
 
-![Klimatabelle Münster](Klimatabelle_Münster.png){width=100%}
+```{r}
+cat("\nDezember 2025:\n")
+summary(data$`Durschnittl. rel. Luftfeuchtigkeit [%]`[data$Monat == "12"])
+```
 
 :::
 
 :::
 
 
-# Was ist die absolute Luftfeuchtigkeit?
+## Was ist die absolute Luftfeuchtigkeit?
 
 Die **absolute Luftfeuchtigkeit** gibt an, wie viel Wasserdampf tatsächlich in der Luft enthalten ist.
 
@@ -680,8 +683,8 @@ summary(fit)
 
 ```{r}
 #| echo: false
-#| fig-width: 30
-#| fig-height: 12
+#| fig-width: 14
+#| fig-height: 6
 
 par(mfrow = c(2, 1), mar = c(4, 4, 3, 1))
 
