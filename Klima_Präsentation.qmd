@@ -171,6 +171,40 @@ ggplot(data, aes(x = Zeit, y = `Durschnittl. rel. Luftfeuchtigkeit [%]`)) +
         plot.subtitle = element_text(size = 12))
 ```
 
+
+
+## Lufttemperatur und Luftfeuchtigkeit
+
+```{r}
+#| echo: false
+#| fig-width: 10
+#| fig-height: 6
+
+library(ggplot2)
+
+# Primäre und sekundäre Achse
+ggplot(data, aes(x = Zeit)) +
+  geom_line(aes(y = `Durschnittl. Lufttemperatur [°C]`, 
+                color = "Temperatur"), linewidth = 1) +
+  geom_line(aes(y = `Durschnittl. rel. Luftfeuchtigkeit [%]` / 10, 
+                color = "Luftfeuchtigkeit"), linewidth = 1) +
+  scale_y_continuous(
+    name = "Temperatur [°C]",
+    sec.axis = sec_axis(~.*10, name = "Relative Luftfeuchtigkeit [%]")
+  ) +
+  scale_color_manual(values = c("Temperatur" = "#E74C3C", 
+                                  "Luftfeuchtigkeit" = "#3498DB")) +
+  labs(title = "Temperatur und Luftfeuchtigkeit im Verlauf",
+       subtitle = "Steinfurter Straße",
+       x = "Datum",
+       color = "Messwert") +
+  theme_minimal() +
+  theme(legend.position = "bottom",
+        plot.title = element_text(size = 16, face = "bold"),
+        axis.title.y.left = element_text(color = "#E74C3C"),
+        axis.title.y.right = element_text(color = "#3498DB"))
+```
+
 ## Vergleich - Temperatur
 
 ::: {.columns}
@@ -219,41 +253,6 @@ summary(data$`Durschnittl. rel. Luftfeuchtigkeit [%]`[data$Monat == "12"])
 :::
 
 :::
-
-## Lufttemperatur und Luftfeuchtigkeit
-
-```{r}
-#| echo: false
-#| fig-width: 10
-#| fig-height: 6
-
-library(ggplot2)
-
-# Primäre und sekundäre Achse
-ggplot(data, aes(x = Zeit)) +
-  geom_line(aes(y = `Durschnittl. Lufttemperatur [°C]`, 
-                color = "Temperatur"), linewidth = 1) +
-  geom_line(aes(y = `Durschnittl. rel. Luftfeuchtigkeit [%]` / 10, 
-                color = "Luftfeuchtigkeit"), linewidth = 1) +
-  scale_y_continuous(
-    name = "Temperatur [°C]",
-    sec.axis = sec_axis(~.*10, name = "Relative Luftfeuchtigkeit [%]")
-  ) +
-  scale_color_manual(values = c("Temperatur" = "#E74C3C", 
-                                  "Luftfeuchtigkeit" = "#3498DB")) +
-  labs(title = "Temperatur und Luftfeuchtigkeit im Verlauf",
-       subtitle = "Steinfurter Straße",
-       x = "Datum",
-       color = "Messwert") +
-  theme_minimal() +
-  theme(legend.position = "bottom",
-        plot.title = element_text(size = 16, face = "bold"),
-        axis.title.y.left = element_text(color = "#E74C3C"),
-        axis.title.y.right = element_text(color = "#3498DB"))
-```
-
-<details>
-<summary>Code anzeigen</summary>
 
 
 ## Absolute Feuchte - Theorie {.smaller}
@@ -560,6 +559,9 @@ par(mfrow = c(1, 1))
 -   Links: starke Peaks bei 24h/48h/72h in den Rohdaten
 -   Rechts: Peaks sind deutlich abgeschwächt → Tageszyklus erfolgreich entfernt
 
+
+<details>
+<summary>Code anzeigen</summary>
 ```r
 library(ggplot2)
 
