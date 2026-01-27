@@ -358,6 +358,32 @@ summary(data$`Durschnittl. rel. Luftfeuchtigkeit [%]`[data$Monat == "12"])
 
 :::
 
+## Zusammenfassung: Temperatur und relative Luftfeuchtigkeit {.smaller}
+
+::: {.columns}
+
+::: {.column width="50%"}
+### Temperatur (18.11. - 09.12.2025)
+
+- **Bereich:** ~0°C bis ~12°C
+- **November:** Durchschnitt ca. 4°C
+- **Dezember:** Etwas wärmer, Durchschnitt ca. 7°C
+- **Tagesgang:** Deutliche Amplitude (2-6°C), besonders an klaren Tagen
+:::
+
+::: {.column width="50%"}
+### Relative Luftfeuchtigkeit
+
+- **Bereich:** ~60% bis ~100%
+- **Typisch:** durchschnitt 90% im November/Dezember
+- **Verhalten:** Stark antiproportional zur Temperatur
+- **Tagsüber:** Niedrigere Werte 
+- **Nachts:** Oft 100% 
+:::
+
+:::
+
+
 
 ## Was ist die absolute Luftfeuchtigkeit?
 
