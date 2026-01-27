@@ -565,6 +565,46 @@ ggplot(data, aes(x = Zeit)) +
   scale_x_datetime(date_labels = "%d.%m", date_breaks = "3 days")
 ```
 
+## Zusammenfassung: Absolute vs. Relative Luftfeuchtigkeit {.smaller}
+
+::: {.incremental}
+### Was zeigen die Daten?
+
+- **Relative Luftfeuchtigkeit:** Schwankt stark zwischen ~60% und 100%, oft invers zur Temperatur
+- **Absolute Luftfeuchtigkeit:** Bewegt sich stabiler im Bereich von ~0.005–0.009 kg·m⁻³
+
+### Warum verhalten sich beide unterschiedlich?
+
+- Die **relative Feuchte** hängt von der Sättigungskapazität der Luft ab → steigt die Temperatur, sinkt die relative Feuchte (bei gleichem Wassergehalt)
+- Die **absolute Feuchte** zeigt den tatsächlichen Wasserdampfgehalt → ändert sich nur bei Verdunstung, Kondensation oder Luftmassenwechsel
+:::
+
+## Erkenntnisse aus den Messdaten {.smaller}
+
+::: {.columns}
+
+::: {.column width="50%"}
+**Beobachtungen:**
+
+- Tagsüber (wärmer): Relative Feuchte sinkt, absolute bleibt stabil
+- Nachts (kälter): Relative Feuchte steigt oft auf ~100% (Taupunkt erreicht)
+- Absolute Feuchte zeigt Änderungen bei Wetterwechsel (neue Luftmassen)
+:::
+
+::: {.column width="50%"}
+**Interpretation:**
+
+- Hohe relative Feuchte bedeutet **nicht** automatisch viel Wasser in der Luft
+- Im November/Dezember: Kalte Luft kann weniger Wasser halten → schnell 100% erreicht
+- Absolute Feuchte eignet sich besser zum Vergleich verschiedener Tage/Temperaturen
+:::
+
+:::
+
+### Praktische Bedeutung
+
+Die Unterscheidung ist wichtig für: Nebel-/Taubildung und Verdunstungsraten
+
 ## Was ist Autokorrelation?
 
 **Autokorrelation** misst, wie stark ein Messwert mit früheren Messwerten zusammenhängt.
