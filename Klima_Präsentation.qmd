@@ -794,4 +794,30 @@ par(mfrow = c(1, 1))
 -   Links: starke Peaks bei 24h/48h/72h in den Rohdaten
 -   Rechts: Peaks sind deutlich abgeschwächt → Tageszyklus erfolgreich entfernt
 
+## Zusammenfassung: Tagesverlauf und Trends {.smaller style="font-size: 0.75em;"}
+
+::: {.columns}
+
+::: {.column width="50%"}
+### Was haben wir gemacht?
+
+**Problem:** Tägliche Temperaturzyklen überdecken längerfristige Trends
+
+**Lösung:** Tagesverlauf als Sinusfunktion modelliert und herausgerechnet
+
+**Ergebnis:** Bereinigte Daten zeigen Abweichungen vom typischen Muster
+:::
+
+::: {.column width="50%"}
+### Warum ist das wichtig?
+
+- **Autokorrelation:** Temperatur wiederholt sich alle 24h (Sonnenzyklus)
+- **Bereinigung:** Entfernt Wiederholungen, macht langfristige Muster sichtbar
+- **Praktisch:** Erkennung ungewöhnlicher Tage unabhängig von der Tageszeit
+
+**Kurz gesagt:** Wir filtern das „Normale" heraus, um das „Besondere" zu sehen.
+:::
+
+:::
+
 # Viele Dank für eure Aufmerksamkeit
